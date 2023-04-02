@@ -4,24 +4,21 @@
   "description": "Velice neobjektivní hodnocení nejen pražských kaváren",
   "icons": [
     {
-      "src": "/static/icon-vec.svg",
+      "src": "/static/icons/iconvec.svg",
       "type": "image/svg+xml",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     },
     {
-      "src": "/static/icon-192.png",
+      "src": "/static/icons/icon196.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "196x196",
+      "purpose": "any maskable"
     },
     {
-      "src": "/static/icon-512.png",
+      "src": "/static/icons/icon512.png",
       "type": "image/png",
-      "sizes": "512x512"
-    },
-    {
-      "src": "/static/maskable_icon_x192.png",
-      "type": "image/png",
-      "sizes": "192x192",
+      "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
