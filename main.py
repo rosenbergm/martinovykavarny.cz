@@ -39,18 +39,6 @@ def get_admin_auth(credentials: HTTPBasicCredentials = Depends(admin_auth)):
         )
 
 
-def class_by_rating(rating: int):
-    match rating:
-        case 1:
-            return "very-good"
-        case 2:
-            return "pretty-good"
-        case 3:
-            return "good"
-        case _:
-            return "havent-tried"
-
-
 def color_by_rating(rating: int):
     match rating:
         case 1:
@@ -124,41 +112,3 @@ async def addPlace(
         writer.writerow([lat, lon, name, description, address, city, rating])
 
     return RedirectResponse("/admin", status_code=302)
-
-
-# @app.get("/convert", response_class=RedirectResponse)
-# async def convert(request: Request):
-#     with open("data/result.csv", "w", newline="") as result_file:
-#         writer = csv.writer(result_file)
-
-#         writer.writerow(result_header)
-
-#         with open("kavarny.csv", newline="") as csvfile:
-#             spamreader = csv.reader(csvfile)
-#             header = next(spamreader)
-#             for row in spamreader:
-#                 [point, name, description, address, city, rating] = row
-#                 if point:
-#                     [lat, lon] = (point[7:][:-1]).split(" ")
-
-#                     res = httpx.get(
-#                         f"https://api.mapbox.com/geocoding/v5/mapbox.places/{lat},{lon}.json?access_token=pk.eyJ1Ijoicm9zZW5iZXJnbSIsImEiOiJjamtzYjlnYnkzcjF3M3Fwanc4Nmdmd3IxIn0.j29iER1BDiwOCUCwk4aA9A"
-#                     )
-
-#                     print(res.json())
-
-#                     gc = res.json()
-#                     addr = gc["features"][0]["place_name"]
-#                     c = next(
-#                         filter(
-#                             lambda x: x["id"].startswith("place"),
-#                             gc["features"][0]["context"],
-#                         ),
-#                         {"text": "Prague"},
-#                     )
-
-#                     writer.writerow(
-#                         [lon, lat, name, description, str(addr), str(c["text"]), rating]
-#                     )
-
-#     return RedirectResponse("/", status_code=302)

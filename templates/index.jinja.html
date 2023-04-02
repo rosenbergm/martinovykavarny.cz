@@ -43,14 +43,12 @@
 
   const data = {{ places | tojson | safe }};
 
-  console.log(map.layers)
-
   for (const point of data) {
     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
       `<h3>${point.name}</h3>
       <p>${point.description}</p>
       <p>${point.address}</p>
-      <a target="_blank" href="https://maps.google.com?q=${point.coordinates[1]},${point.coordinates[0]}">Open in Google Maps</a>
+      <a target="_blank" href="https://maps.google.com?q=${point.name}">Open in Google Maps</a>
       `
     ).addClassName('popup');
 
