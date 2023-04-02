@@ -1,3 +1,3 @@
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/static/service-worker.js");
+  navigator.serviceWorker.register("/static/worker.js");
 }
