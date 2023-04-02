@@ -1,7 +1,7 @@
 import os
 import secrets
 from fastapi import Depends, FastAPI, HTTPException, Request, Form, status
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -109,6 +109,11 @@ async def offline(request: Request):
 async def manifest(_request: Request):
     with open("static/manifest.json") as file:
         return JSONResponse(content=json.load(file))
+
+
+@app.get("/worker.js", response_class=FileResponse)
+async def worker(_request: Request):
+    return FileResponse("static/worker.js")
 
 
 result_header = ["lat", "lon", "name", "description", "address", "city", "rating"]

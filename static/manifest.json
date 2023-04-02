@@ -1,4 +1,5 @@
 {
+  "short_name": "Martinovy kavárny",
   "name": "Martinovy kavárny",
   "description": "Velice neobjektivní hodnocení nejen pražských kaváren",
   "icons": [
@@ -19,8 +20,8 @@
     }
   ],
   "start_url": "/",
-  "background_color": "#9c27b0",
+  "background_color": "#ffffff",
   "display": "standalone",
   "scope": "/",
-  "theme_color": "#9c27b0"
+  "theme_color": "#ffffff"
 }
