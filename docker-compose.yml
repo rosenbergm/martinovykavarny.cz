@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=kavarny
+      - POSTGRES_PASSWORD=Mumbo-Collapse-Stability9
+    volumes:
+      - database:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+
+volumes:
+  database:
+    driver: local
