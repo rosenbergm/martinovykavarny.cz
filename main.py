@@ -1,7 +1,7 @@
 import os
 import secrets
 from fastapi import Depends, FastAPI, HTTPException, Request, Form, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -12,6 +12,7 @@ from typing import Annotated
 import csv
 import dotenv
 import httpx
+import json
 
 dotenv.load_dotenv()
 
@@ -79,6 +80,12 @@ async def root(request: Request):
         "index.jinja.html",
         {"request": request, "places": places},
     )
+
+
+@app.get("/manifest.json", response_class=JSONResponse)
+async def manifest(_request: Request):
+    with open("static/manifest.json") as file:
+        return JSONResponse(content=json.load(file))
 
 
 result_header = ["lat", "lon", "name", "description", "address", "city", "rating"]
