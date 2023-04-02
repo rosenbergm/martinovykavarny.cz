@@ -1,7 +1,5 @@
  html {
    height: -webkit-fill-available;
-
-   overflow: hidden;
  }
 
  body {
@@ -9,12 +7,15 @@
 
    min-height: 100vh;
    min-height: -webkit-fill-available;
+   max-height: 100vh;
 
    margin: 0;
    padding: 0;
 
    display: flex;
    flex-direction: column;
+
+   position: relative;
  }
 
  #map {

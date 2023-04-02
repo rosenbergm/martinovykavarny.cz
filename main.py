@@ -82,6 +82,29 @@ async def root(request: Request):
     )
 
 
+@app.get("/offline", response_class=HTMLResponse)
+async def offline(request: Request):
+    places = []
+
+    with open("data/result.csv", newline="") as csvfile:
+        spamreader = csv.reader(csvfile)
+        next(spamreader)
+        for row in spamreader:
+            [lon, lat, name, description, address, city, rating] = row
+            places.append(
+                {
+                    "coordinates": [float(lat), float(lon)],
+                    "color": color_by_rating(int(rating)),
+                    "name": name,
+                    "description": description,
+                    "address": address,
+                }
+            )
+    return templates.TemplateResponse(
+        "offline.jinja.html", {"request": request, "places": places}
+    )
+
+
 @app.get("/manifest.json", response_class=JSONResponse)
 async def manifest(_request: Request):
     with open("static/manifest.json") as file:

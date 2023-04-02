@@ -25,8 +25,8 @@
     container: 'map',
     // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
     style: 'mapbox://styles/mapbox/streets-v12',
-    center: [-24, 42], // starting center in [lng, lat]
-    zoom: 1 // starting zoom
+    center: [14.4378, 50.0755], // starting center in [lng, lat]
+    zoom: 10 // starting zoom
   });
 
   map.addControl(
@@ -48,7 +48,7 @@
       `<h3>${point.name}</h3>
       <p>${point.description}</p>
       <p>${point.address}</p>
-      <a target="_blank" href="https://maps.google.com?q=${point.name}">Open in Google Maps</a>
+      <a target="_blank" href="https://maps.google.com?q=${point.name}">Otevřít v Mapách Google</a>
       `
     ).addClassName('popup');
 

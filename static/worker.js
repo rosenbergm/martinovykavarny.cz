@@ -1,10 +1,5 @@
 const CACHE_NAME = 'offline';
-const OFFLINE_URL = '/';
-
-const filesToCache = [
-  "/",
-  '/static'
-]
+const OFFLINE_URL = '/offline';
 
 self.addEventListener('install', function (event) {
   console.log('[ServiceWorker] Install');
@@ -13,8 +8,7 @@ self.addEventListener('install', function (event) {
     const cache = await caches.open(CACHE_NAME);
     // Setting {cache: 'reload'} in the new request will ensure that the response
     // isn't fulfilled from the HTTP cache; i.e., it will be from the network.
-    // await cache.add(new Request(OFFLINE_URL, { cache: 'reload' }));
-    await cache.addAll(filesToCache)
+    await cache.add(new Request(OFFLINE_URL, { cache: 'reload' }));
   })());
 
   self.skipWaiting();
