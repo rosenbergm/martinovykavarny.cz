@@ -19,12 +19,30 @@
       "src": "/static/icons/icon512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
   "start_url": "/",
   "background_color": "#ffffff",
-  "display": "standalone",
+  "display": "fullscreen",
   "scope": "/",
-  "theme_color": "#ffffff"
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "shortcuts": [
+    {
+      "name": "Kavárny",
+      "url": "/"
+    }
+  ],
+  "lang": "cs",
+  "categories": [
+    "food-drink",
+    "coffee"
+  ]
 }
