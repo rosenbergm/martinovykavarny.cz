@@ -18,6 +18,7 @@ httpx = "^0.23.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
+selenium = "^4.8.3"
 
 [build-system]
 requires = ["poetry-core"]
