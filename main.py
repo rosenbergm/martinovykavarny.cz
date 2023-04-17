@@ -1,18 +1,21 @@
+import csv
+import json
 import os
 import secrets
-from fastapi import Depends, FastAPI, HTTPException, Request, Form, status
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-
-
 from typing import Annotated
 
-import csv
 import dotenv
 import httpx
-import json
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    RedirectResponse,
+)
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 dotenv.load_dotenv()
 
@@ -62,9 +65,9 @@ async def root(request: Request):
     places = []
 
     with open("data/result.csv", newline="") as csvfile:
-        spamreader = csv.reader(csvfile)
-        next(spamreader)
-        for row in spamreader:
+        csv_reader = csv.reader(csvfile)
+        next(csv_reader)
+        for row in csv_reader:
             [lon, lat, name, description, address, city, rating] = row
             places.append(
                 {
@@ -116,7 +119,15 @@ async def worker(_request: Request):
     return FileResponse("static/worker.js")
 
 
-result_header = ["lat", "lon", "name", "description", "address", "city", "rating"]
+result_header = [
+    "lat",
+    "lon",
+    "name",
+    "description",
+    "address",
+    "city",
+    "rating",
+]
 
 
 @app.post("/addPlace", response_class=RedirectResponse)
