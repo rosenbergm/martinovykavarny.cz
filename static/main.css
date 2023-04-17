@@ -1,5 +1,5 @@
 * {
-  font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
 }
 
 html {
@@ -40,6 +40,10 @@ h2 {
   pointer-events: none;
 }
 
+#map .mapboxgl-marker {
+  cursor: pointer;
+}
+
 footer {
   display: flex;
   flex-direction: row;
@@ -47,12 +51,12 @@ footer {
 
   flex-wrap: wrap;
 
-  gap: .7rem;
+  gap: 0.7rem;
 
   padding: 1rem;
 }
 
-footer>div {
+footer > div {
   display: flex;
   align-items: center;
 }
