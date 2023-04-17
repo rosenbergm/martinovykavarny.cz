@@ -36,8 +36,8 @@ window.addEventListener('appinstalled', (event) => {
   window.deferredPrompt = null;
 });
 
-if ("serviceWorker" in navigator) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
-    await navigator.serviceWorker.register("/worker.js");
+    await navigator.serviceWorker.register('/worker.js');
   })
 }
