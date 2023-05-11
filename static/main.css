@@ -92,6 +92,26 @@ footer > div {
   display: none !important;
 }
 
+.images {
+  width: 200px;
+  height: 3.6rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.images img {
+  height: 3.6rem;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+.hours {
+  display: grid;
+  grid-template-columns: auto auto;
+  padding-left: 0.75rem;
+}
+
 #installContainer {
   position: absolute;
   bottom: 1em;

@@ -64,11 +64,14 @@ async def admin(request: Request, _=Depends(get_admin_auth)):
 async def root(request: Request):
     places = []
 
+    with open("data/opening_hours.json") as file:
+        opening_hours = json.load(file)
+
     with open("data/result.csv", newline="") as csvfile:
         csv_reader = csv.reader(csvfile)
         next(csv_reader)
         for row in csv_reader:
-            [lon, lat, name, description, address, city, rating] = row
+            [lon, lat, name, description, address, city, rating, link] = row
             places.append(
                 {
                     "coordinates": [float(lat), float(lon)],
@@ -76,12 +79,14 @@ async def root(request: Request):
                     "name": name,
                     "description": description,
                     "address": address,
+                    "link": link,
+                    "id": link.split("/")[-1],
                 }
             )
 
     return templates.TemplateResponse(
         "index.jinja.html",
-        {"request": request, "places": places},
+        {"request": request, "places": places, "hours": opening_hours},
     )
 
 
@@ -93,7 +98,7 @@ async def offline(request: Request):
         spamreader = csv.reader(csvfile)
         next(spamreader)
         for row in spamreader:
-            [lon, lat, name, description, address, city, rating] = row
+            [lon, lat, name, description, address, city, rating, link] = row
             places.append(
                 {
                     "coordinates": [float(lat), float(lon)],
@@ -101,6 +106,7 @@ async def offline(request: Request):
                     "name": name,
                     "description": description,
                     "address": address,
+                    "link": link,
                 }
             )
     return templates.TemplateResponse(
