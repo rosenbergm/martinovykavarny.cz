@@ -6,7 +6,15 @@ from typing import Annotated
 
 import dotenv
 import httpx
-from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    Form,
+    HTTPException,
+    Request,
+    status,
+    BackgroundTasks,
+)
 from fastapi.responses import (
     FileResponse,
     HTMLResponse,
@@ -144,6 +152,8 @@ async def addPlace(
     lon: Annotated[str, Form()],
     description: Annotated[str, Form()],
     rating: Annotated[int, Form()],
+    map_link: Annotated[str, Form()],
+    background_tasks: BackgroundTasks,
 ):
     with open("places/result.csv", "a", newline="\n") as result_file:
         writer = csv.writer(result_file)
@@ -161,6 +171,10 @@ async def addPlace(
             {"text": "Prague"},
         )["text"]
 
-        writer.writerow([lat, lon, name, description, address, city, rating])
+        writer.writerow(
+            [lat, lon, name, description, address, city, rating, map_link]
+        )
+
+    background_tasks.add_task(lambda: os.system("python build.py"))  # help
 
     return RedirectResponse("/admin", status_code=302)
