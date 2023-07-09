@@ -1,5 +1,5 @@
 * {
-  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
+  font-family: "Archivo", sans-serif;
 }
 
 html {
@@ -56,9 +56,25 @@ footer {
   padding: 1rem;
 }
 
-footer > div {
+@media screen and (min-width: 800px) {
+  footer {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+
+    background-color: #fff;
+  }
+}
+
+footer>div {
   display: flex;
   align-items: center;
+
+  font-weight: 600;
 }
 
 .sign {
@@ -93,17 +109,25 @@ footer > div {
 }
 
 .images {
-  width: 200px;
-  height: 3.6rem;
-  display: grid;
+  /* width: 200px;
+  height: 3.6rem; */
+  /* display: grid; */
+  display: flex;
   gap: 1rem;
-  grid-template-columns: 1fr 1fr 1fr;
+  /* grid-template-columns: 1fr 1fr 1fr; */
+
+  overflow-x: auto;
+
+  width: 100%;
+  height: 300px;
 }
 
 .images img {
-  height: 3.6rem;
+  /* height: 3.6rem; */
   aspect-ratio: 1/1;
   object-fit: cover;
+
+  /* width: 100%; */
 }
 
 .hours {
@@ -126,4 +150,44 @@ footer > div {
   color: white;
   font-size: 1em;
   padding: 0.75em;
+}
+
+.mapboxgl-popup-content {
+  padding: 1rem !important;
+}
+
+.popup {
+  width: 300px;
+}
+
+.popup h3 {
+  font-family: "Archivo Black", sans-serif;
+  font-size: 1.5rem;
+  line-height: 110%;
+
+  margin-top: 0.5rem;
+}
+
+.popup p {
+  font-size: 1rem;
+  line-height: 110%;
+}
+
+.popup a {
+  font-size: 1rem;
+  line-height: 110%;
+}
+
+.popup details {
+  font-size: 1rem;
+  line-height: 110%;
+
+  margin-top: 0.5rem;
+}
+
+.hint {
+  margin-top: 0.4rem;
+
+  font-size: 0.5rem;
+  opacity: 0.5;
 }

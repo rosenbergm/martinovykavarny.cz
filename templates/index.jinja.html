@@ -16,6 +16,9 @@
   <div>
     <span class="sign not-been-yet"></span>Nevyzkoušel jsem (zatím)
   </div>
+
+  <p style="margin: 0; opacity: 0.5; font-size: 0.8rem;">vyrobeno <a href="https://marrrt.in"
+      target="_blank">martinem</a></p>
 </footer>
 
 <div id="installContainer" class="hidden">
@@ -51,22 +54,23 @@
 
   for (const point of data) {
     console.log(point)
-    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+    const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '300px' }).setHTML(
       `<h3>${point.name}</h3>
       <div class="images">
         ${[0, 1, 2].map(i => `<img src="/data/images/${point.id}_${i}.jpeg" onerror="this.style.display = 'none'"/>`).join('')}
       </div>
+      <p class="hint">scrolluj, je tam víc obrázků;)</p>
       <p>${point.description}</p>
       <p>${point.address}</p>
       <a target="_blank" href="${point.link}">Otevřít v Mapách Google</a>`
-        + (hours[point.id]
-          ? `<details>
+      + (hours[point.id]
+        ? `<details>
             <summary>Otevírací doba</summary>
             <div class="hours">
               ${Object.entries(hours[point.id]).map(([day, time]) => `<b>${days[day]}</b><span>${time}</span>`).join('')}
             </div>
           </details>`
-          : '')
+        : '')
     ).addClassName('popup');
 
     new mapboxgl.Marker({
