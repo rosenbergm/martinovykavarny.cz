@@ -4,8 +4,6 @@ EXPOSE 80
 
 WORKDIR /app
 
-RUN apt install firefox-esr
-
 RUN pip install --upgrade pip
 RUN pip install poetry
 
