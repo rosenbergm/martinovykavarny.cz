@@ -2,14 +2,6 @@
 
 {% block content %}
 
-<form action="addPlace" method="post" enctype="multipart/form-data">
-  <input name="name" type="text" placeholder="Name" />
-  <input name="lat" type="text" placeholder="Latitude" />
-  <input name="lon" type="text" placeholder="Longitude" />
-  <input name="description" type="text" placeholder="Description" />
-  <input name="rating" type="number" placeholder="Rating (1-5)" />
-  <input name="map_link" type="text" placeholder="Google Maps link" />
-  <input type="submit" value="Go!" />
-</form>
+<button onclick="fetch('https://martinovykavarny.cz/sweep', {method: 'POST'})">refresh</button>
 
 {% endblock content %}

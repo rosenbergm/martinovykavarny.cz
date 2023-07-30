@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import secrets
+import requests
 from typing import Annotated
 
 import dotenv
@@ -51,13 +52,13 @@ def get_admin_auth(credentials: HTTPBasicCredentials = Depends(admin_auth)):
         )
 
 
-def color_by_rating(rating: int):
+def color_by_rating(rating: str):
     match rating:
-        case 1:
+        case "excellent":
             return "#9c27b0"
-        case 2:
+        case "recommend":
             return "#0288d1"
-        case 3:
+        case "meh":
             return "#afb42b"
         case _:
             return "#bebebe"
@@ -68,33 +69,42 @@ async def admin(request: Request, _=Depends(get_admin_auth)):
     return templates.TemplateResponse("admin.jinja.html", {"request": request})
 
 
+@app.post("/sweep", response_class=HTMLResponse)
+async def sweep(
+    request: Request, background_tasks: BackgroundTasks, _=Depends(get_admin_auth)
+):
+    background_tasks.add_task(lambda: os.system("python build.py"))  # help
+
+    return RedirectResponse("/admin", status_code=302)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     places = []
 
-    with open("data/opening_hours.json") as file:
-        opening_hours = json.load(file)
+    data = requests.get(
+        "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000",
+        headers={"Accept": "application/json"},
+    ).json()
 
-    with open("data/result.csv", newline="") as csvfile:
-        csv_reader = csv.reader(csvfile)
-        next(csv_reader)
-        for row in csv_reader:
-            [lon, lat, name, description, address, city, rating, link] = row
-            places.append(
-                {
-                    "coordinates": [float(lat), float(lon)],
-                    "color": color_by_rating(int(rating)),
-                    "name": name,
-                    "description": description,
-                    "address": address,
-                    "link": link,
-                    "id": link.split("/")[-1],
-                }
-            )
+    for place in data["items"]:
+        places.append(
+            {
+                "coordinates": [float(place["latitude"]), float(place["longitude"])],
+                "color": color_by_rating(place["rating"]),
+                "name": place["name"],
+                "description": place["description"],
+                "address": place["address"],
+                "link": place["maps_link"],
+                "id": place["id"],
+                "hours": place["opening_hours"],
+                "images": place["images"],
+            }
+        )
 
     return templates.TemplateResponse(
         "index.jinja.html",
-        {"request": request, "places": places, "hours": opening_hours},
+        {"request": request, "places": places},
     )
 
 
@@ -131,50 +141,3 @@ async def manifest(_request: Request):
 @app.get("/worker.js", response_class=FileResponse)
 async def worker(_request: Request):
     return FileResponse("static/worker.js")
-
-
-result_header = [
-    "lat",
-    "lon",
-    "name",
-    "description",
-    "address",
-    "city",
-    "rating",
-]
-
-
-@app.post("/addPlace", response_class=RedirectResponse)
-async def addPlace(
-    request: Request,
-    name: Annotated[str, Form()],
-    lat: Annotated[str, Form()],
-    lon: Annotated[str, Form()],
-    description: Annotated[str, Form()],
-    rating: Annotated[int, Form()],
-    map_link: Annotated[str, Form()],
-    background_tasks: BackgroundTasks,
-):
-    with open("places/result.csv", "a", newline="\n") as result_file:
-        writer = csv.writer(result_file)
-
-        res = httpx.get(
-            f"https://api.mapbox.com/geocoding/v5/mapbox.places/{lon},{lat}.json?access_token=pk.eyJ1Ijoicm9zZW5iZXJnbSIsImEiOiJjamtzYjlnYnkzcjF3M3Fwanc4Nmdmd3IxIn0.j29iER1BDiwOCUCwk4aA9A"
-        ).json()
-
-        address = res["features"][0]["place_name"]
-        city = next(
-            filter(
-                lambda x: x["id"].startswith("place"),
-                res["features"][0]["context"],
-            ),
-            {"text": "Prague"},
-        )["text"]
-
-        writer.writerow(
-            [lat, lon, name, description, address, city, rating, map_link]
-        )
-
-    background_tasks.add_task(lambda: os.system("python build.py"))  # help
-
-    return RedirectResponse("/admin", status_code=302)

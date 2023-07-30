@@ -3,23 +3,24 @@ import json
 import pathlib
 import re
 import requests
+import io
+import dotenv
 from time import sleep
 
+import os
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-places = []
-scanned = pathlib.Path("data/scanned.txt").read_text().split("\n")
-with open("data/opening_hours.json") as file:
-    place_opening_hours = json.load(file)
+dotenv.load_dotenv()
 
-with open("data/result.csv", newline="") as csvfile:
-    csv_reader = csv.reader(csvfile)
-    next(csv_reader)
-    for row in csv_reader:
-        # 7 is the index for a map link
-        places.append(row[7])
+scanned = pathlib.Path("data/scanned.txt").read_text().split("\n")
+
+admin = requests.post(
+    "https://db.martinovykavarny.cz/api/admins/auth-with-password",
+    json={"identity": os.getenv("PB_EMAIL"), "password": os.getenv("PB_PASSWORD")},
+).json()
+
 
 with Firefox() as browser:
     browser.maximize_window()
@@ -28,22 +29,22 @@ with Firefox() as browser:
     # Zoom out three times
     for _ in range(3):
         # Send keys
-        browser.find_element(By.CSS_SELECTOR, "body").send_keys(
-            Keys.COMMAND + "-"
-        )
+        browser.find_element(By.CSS_SELECTOR, "body").send_keys(Keys.COMMAND + "-")
 
     place_images = {}
 
+    places = (
+        requests.get(
+            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0)",
+            headers={"Accept": "application/json"},
+        )
+        .json()
+        .get("items")
+    )
+
     for place in places:
-        place_id = place.split("/")[-1]
-
-        if place_id in scanned:
-            continue
-
-        print(place_id)
-
         # Open the coffee place's page
-        browser.get(place)
+        browser.get(place["maps_link"])
         sleep(5)
 
         # Deal with cookies
@@ -56,9 +57,7 @@ with Firefox() as browser:
         ### Images
 
         # Click on the images icon
-        browser.find_element(
-            By.CSS_SELECTOR, 'button[aria-label^="Fotka: "]'
-        ).click()
+        browser.find_element(By.CSS_SELECTOR, 'button[aria-label^="Fotka: "]').click()
 
         sleep(3)
 
@@ -66,18 +65,32 @@ with Firefox() as browser:
         images = browser.find_elements(
             By.CSS_SELECTOR, 'div.loaded[style*="googleusercontent.com"]'
         )
+
         # Extract the image links
-        place_images[place_id] = [
-            re.search(
-                r'url\("(?P<image_link>.*)"\)', i.get_attribute("style")
-            ).group("image_link")
+        place_images[place["id"]] = [
+            re.search(r'url\("(?P<image_link>.*)"\)', i.get_attribute("style")).group(
+                "image_link"
+            )
             for i in images
         ][:3]
 
+        images_to_send = []
+
         # Save the images
-        for i, link in enumerate(place_images[place_id]):
-            with open(f"data/images/{place_id}_{i}.jpeg", "wb") as f:
-                f.write(requests.get(link).content)
+        for i, link in enumerate(place_images[place["id"]]):
+            images_to_send.append(
+                (
+                    "images",
+                    (f"{place['id']}_{i}", io.BytesIO(requests.get(link).content)),
+                )
+            )
+
+        r = requests.patch(
+            "https://db.martinovykavarny.cz/api/collections/places/records/"
+            + place["id"],
+            headers={"Authorization": admin["token"]},
+            files=tuple(images_to_send),
+        )
 
         # Go back to the business overview
         browser.execute_script("window.history.go(-1)")
@@ -103,16 +116,20 @@ with Firefox() as browser:
                 By.CSS_SELECTOR, "tr > td:nth-child(2) > ul"
             )
 
-            place_opening_hours[place_id] = dict(
-                enumerate(map(lambda d: d.text, opening_hours_rows))
+            r = requests.patch(
+                "https://db.martinovykavarny.cz/api/collections/places/records/"
+                + place["id"],
+                headers={
+                    "Authorization": admin["token"],
+                    "Content-Type": "application/json",
+                },
+                data=json.dumps(
+                    {
+                        "opening_hours": dict(
+                            enumerate(map(lambda d: d.text, opening_hours_rows))
+                        )
+                    }
+                ),
             )
         except:
-            place_opening_hours[place_id] = None
-
-        # Append the opening hours to the JSON file with opening hourse
-        with open("data/opening_hours.json", "w") as f:
-            json.dump(place_opening_hours, f)
-
-        # Mark this place as scanned
-        scanned.append(place_id)
-        pathlib.Path("data/scanned.txt").write_text("\n".join(scanned))
+            pass
