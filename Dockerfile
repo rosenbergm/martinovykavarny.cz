@@ -4,7 +4,7 @@ EXPOSE 80
 
 WORKDIR /app
 
-RUN apt-get install firefox
+RUN apt install firefox
 
 RUN pip install --upgrade pip
 RUN pip install poetry
