@@ -14,8 +14,6 @@ from selenium.webdriver.common.keys import Keys
 
 dotenv.load_dotenv()
 
-scanned = pathlib.Path("data/scanned.txt").read_text().split("\n")
-
 admin = requests.post(
     "https://db.martinovykavarny.cz/api/admins/auth-with-password",
     json={"identity": os.getenv("PB_EMAIL"), "password": os.getenv("PB_PASSWORD")},
