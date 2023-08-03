@@ -9,8 +9,12 @@ from time import sleep
 
 import os
 from selenium.webdriver import Firefox
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+
+opts = Options()
+opts.headless = True
 
 dotenv.load_dotenv()
 
@@ -20,7 +24,7 @@ admin = requests.post(
 ).json()
 
 
-with Firefox() as browser:
+with Firefox(options=opts) as browser:
     browser.maximize_window()
     browser.get("https://maps.google.com")
 

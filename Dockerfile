@@ -1,11 +1,14 @@
-FROM python:3.10-buster
+FROM python:3.10-alpine
 
 EXPOSE 80
 
 WORKDIR /app
 
-RUN apt-get update
-RUN apt-get install -y firefox-esr
+# RUN apt-get update
+# RUN apt-get install -y firefox-esr firefox-esr-geckodriver
+
+RUN apk update
+RUN apk add firefox 
 
 RUN pip install --upgrade pip
 RUN pip install poetry
