@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 opts = Options()
-opts.headless = True
+opts.add_argument("--headless")
 
 dotenv.load_dotenv()
 
@@ -52,14 +52,16 @@ with Firefox(options=opts) as browser:
         # Deal with cookies
         if "consent.google.c" in browser.current_url:
             no_consent = browser.find_element(
-                By.CSS_SELECTOR, 'button[aria-label="Odmítnout vše"]'
+                By.CSS_SELECTOR, 'button[aria-label="Alle ablehnen"]'
             )
             no_consent.click()
 
         ### Images
 
         # Click on the images icon
-        browser.find_element(By.CSS_SELECTOR, 'button[aria-label^="Fotka: "]').click()
+        browser.find_element(
+            By.CSS_SELECTOR, 'button[aria-label^="Foto von: "]'
+        ).click()
 
         sleep(3)
 
