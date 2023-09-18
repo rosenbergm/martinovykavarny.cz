@@ -1,17 +1,18 @@
-import csv
+import datetime
+import dotenv
+import io
 import json
-import pathlib
+import os
 import re
 import requests
-import io
-import dotenv
-from time import sleep
 
-import os
 from selenium.webdriver import Firefox
-from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options
+from time import sleep
+
+from urllib.parse import unquote
 
 opts = Options()
 opts.add_argument("--headless")
@@ -22,6 +23,13 @@ admin = requests.post(
     "https://db.martinovykavarny.cz/api/admins/auth-with-password",
     json={"identity": os.getenv("PB_EMAIL"), "password": os.getenv("PB_PASSWORD")},
 ).json()
+
+
+def right_rotation(a, k):
+    # if the size of k > len(a), rotate only necessary with
+    # module of the division
+    rotations = k % len(a)
+    return a[-rotations:] + a[:-rotations]
 
 
 with Firefox(options=opts) as browser:
@@ -35,70 +43,155 @@ with Firefox(options=opts) as browser:
 
     place_images = {}
 
+    # places = (
+    #     requests.get(
+    #         "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0)",
+    #         headers={"Accept": "application/json"},
+    #     )
+    #     .json()
+    #     .get("items")
+    # )
     places = (
         requests.get(
-            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0)",
+            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000",
             headers={"Accept": "application/json"},
         )
         .json()
         .get("items")
     )
 
+    today = datetime.datetime.today().weekday()
+
     for place in places:
         # Open the coffee place's page
-        browser.get(place["maps_link"])
+        browser.get(f'{place["maps_link"]}?hl=it')
         sleep(5)
+
+        print(
+            f'currently proccessing {place["name"]} ({places.index(place) + 1} of {len(places)})'
+        )
 
         # Deal with cookies
         if "consent.google.c" in browser.current_url:
             no_consent = browser.find_element(
-                By.CSS_SELECTOR, 'button[aria-label="Alle ablehnen"]'
+                By.CSS_SELECTOR,
+                'button[aria-label="Rifiuta tutto"],button[aria-label="Alle ablehnen"],button[aria-label="Odmítnout vše"]'
+                # By.CSS_SELECTOR,
+                # 'button[aria-label="Rifiuta tutto"]',
             )
             no_consent.click()
 
-        ### Images
+        ### Name
 
-        # Click on the images icon
-        browser.find_element(
-            By.CSS_SELECTOR, 'button[aria-label^="Foto von: "]'
-        ).click()
+        try:
+            captured = re.search("\/maps\/place\/([\w\d%\+]+)\/", browser.current_url)
 
-        sleep(3)
+            name = unquote(captured.group(1)).replace("+", " ")
 
-        # Find all the images
-        images = browser.find_elements(
-            By.CSS_SELECTOR, 'div.loaded[style*="googleusercontent.com"]'
-        )
-
-        # Extract the image links
-        place_images[place["id"]] = [
-            re.search(r'url\("(?P<image_link>.*)"\)', i.get_attribute("style")).group(
-                "image_link"
+            r = requests.patch(
+                "https://db.martinovykavarny.cz/api/collections/places/records/"
+                + place["id"],
+                headers={
+                    "Authorization": admin["token"],
+                    "Content-Type": "application/json",
+                },
+                data=json.dumps({"name": name}),
             )
-            for i in images
-        ][:3]
+        except:
+            pass
 
-        images_to_send = []
+        # ### Images
 
-        # Save the images
-        for i, link in enumerate(place_images[place["id"]]):
-            images_to_send.append(
-                (
-                    "images",
-                    (f"{place['id']}_{i}", io.BytesIO(requests.get(link).content)),
-                )
+        # # Click on the images icon
+        # browser.find_element(
+        #     By.CSS_SELECTOR,
+        #     'button[aria-label^="Foto von: "],button[aria-label^="Foto di"],button[aria-label^="Fotka"]'
+        #     # By.CSS_SELECTOR,
+        #     # 'button[aria-label^="Foto di"]',
+        # ).click()
+
+        # sleep(3)
+
+        # # Find all the images
+        # images = browser.find_elements(
+        #     By.CSS_SELECTOR, 'div.loaded[style*="googleusercontent.com"]'
+        # )
+
+        # # Extract the image links
+        # place_images[place["id"]] = [
+        #     re.search(r'url\("(?P<image_link>.*)"\)', i.get_attribute("style")).group(
+        #         "image_link"
+        #     )
+        #     for i in images
+        # ][:3]
+
+        # images_to_send = []
+
+        # # Save the images
+        # for i, link in enumerate(place_images[place["id"]]):
+        #     images_to_send.append(
+        #         (
+        #             "images",
+        #             (f"{place['id']}_{i}", io.BytesIO(requests.get(link).content)),
+        #         )
+        #     )
+
+        # r = requests.patch(
+        #     "https://db.martinovykavarny.cz/api/collections/places/records/"
+        #     + place["id"],
+        #     headers={"Authorization": admin["token"]},
+        #     files=tuple(images_to_send),
+        # )
+
+        # # Go back to the business overview
+        # browser.execute_script("window.history.go(-1)")
+        # sleep(3)
+
+        ### Address
+
+        # try:
+        #     pin_icon = browser.find_element(
+        #         By.CSS_SELECTOR,
+        #         'img[src$="place_gm_blue_24dp.png"]',
+        #     )
+
+        #     container = pin_icon.find_element(
+        #         By.XPATH, "./ancestor::div/following-sibling::div/div"
+        #     )
+
+        #     r = requests.patch(
+        #         "https://db.martinovykavarny.cz/api/collections/places/records/"
+        #         + place["id"],
+        #         headers={
+        #             "Authorization": admin["token"],
+        #             "Content-Type": "application/json",
+        #         },
+        #         data=json.dumps({"address": container.text}),
+        #     )
+        # except:
+        #     pass
+
+        ### Coordinates
+
+        try:
+            captured = re.search("@(\d+.\d+),(\d+.\d+),\d+z", browser.current_url)
+
+            r = requests.patch(
+                "https://db.martinovykavarny.cz/api/collections/places/records/"
+                + place["id"],
+                headers={
+                    "Authorization": admin["token"],
+                    "Content-Type": "application/json",
+                },
+                data=json.dumps(
+                    {
+                        "latitude": float(captured.group(2)),
+                        "longitude": float(captured.group(1)),
+                    }
+                ),
             )
-
-        r = requests.patch(
-            "https://db.martinovykavarny.cz/api/collections/places/records/"
-            + place["id"],
-            headers={"Authorization": admin["token"]},
-            files=tuple(images_to_send),
-        )
-
-        # Go back to the business overview
-        browser.execute_script("window.history.go(-1)")
-        sleep(3)
+        except:
+            pass
 
         ### Opening hours
 
@@ -130,7 +223,12 @@ with Firefox(options=opts) as browser:
                 data=json.dumps(
                     {
                         "opening_hours": dict(
-                            enumerate(map(lambda d: d.text, opening_hours_rows))
+                            enumerate(
+                                map(
+                                    lambda d: d.text,
+                                    right_rotation(opening_hours_rows, today),
+                                )
+                            )
                         )
                     }
                 ),
