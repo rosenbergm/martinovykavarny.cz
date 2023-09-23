@@ -49,7 +49,7 @@
   );
 
   const data = {{ places | tojson | safe }};
-  const days = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota']
+  const days = ['pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota', 'neděle']
 
   for (const point of data) {
     const hours = Object.entries(point.hours ?? []).map(([day, time]) => `<b>${days[day]}</b><span>${time}</span>`)

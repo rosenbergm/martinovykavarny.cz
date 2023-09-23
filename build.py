@@ -43,17 +43,9 @@ with Firefox(options=opts) as browser:
 
     place_images = {}
 
-    # places = (
-    #     requests.get(
-    #         "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0)",
-    #         headers={"Accept": "application/json"},
-    #     )
-    #     .json()
-    #     .get("items")
-    # )
     places = (
         requests.get(
-            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000",
+            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0)",
             headers={"Accept": "application/json"},
         )
         .json()
@@ -100,76 +92,76 @@ with Firefox(options=opts) as browser:
         except:
             pass
 
-        # ### Images
+        ### Images
 
-        # # Click on the images icon
-        # browser.find_element(
-        #     By.CSS_SELECTOR,
-        #     'button[aria-label^="Foto von: "],button[aria-label^="Foto di"],button[aria-label^="Fotka"]'
-        #     # By.CSS_SELECTOR,
-        #     # 'button[aria-label^="Foto di"]',
-        # ).click()
+        # Click on the images icon
+        browser.find_element(
+            By.CSS_SELECTOR,
+            'button[aria-label^="Foto von: "],button[aria-label^="Foto di"],button[aria-label^="Fotka"]'
+            # By.CSS_SELECTOR,
+            # 'button[aria-label^="Foto di"]',
+        ).click()
 
-        # sleep(3)
+        sleep(3)
 
-        # # Find all the images
-        # images = browser.find_elements(
-        #     By.CSS_SELECTOR, 'div.loaded[style*="googleusercontent.com"]'
-        # )
+        # Find all the images
+        images = browser.find_elements(
+            By.CSS_SELECTOR, 'div.loaded[style*="googleusercontent.com"]'
+        )
 
-        # # Extract the image links
-        # place_images[place["id"]] = [
-        #     re.search(r'url\("(?P<image_link>.*)"\)', i.get_attribute("style")).group(
-        #         "image_link"
-        #     )
-        #     for i in images
-        # ][:3]
+        # Extract the image links
+        place_images[place["id"]] = [
+            re.search(r'url\("(?P<image_link>.*)"\)', i.get_attribute("style")).group(
+                "image_link"
+            )
+            for i in images
+        ][:3]
 
-        # images_to_send = []
+        images_to_send = []
 
-        # # Save the images
-        # for i, link in enumerate(place_images[place["id"]]):
-        #     images_to_send.append(
-        #         (
-        #             "images",
-        #             (f"{place['id']}_{i}", io.BytesIO(requests.get(link).content)),
-        #         )
-        #     )
+        # Save the images
+        for i, link in enumerate(place_images[place["id"]]):
+            images_to_send.append(
+                (
+                    "images",
+                    (f"{place['id']}_{i}", io.BytesIO(requests.get(link).content)),
+                )
+            )
 
-        # r = requests.patch(
-        #     "https://db.martinovykavarny.cz/api/collections/places/records/"
-        #     + place["id"],
-        #     headers={"Authorization": admin["token"]},
-        #     files=tuple(images_to_send),
-        # )
+        r = requests.patch(
+            "https://db.martinovykavarny.cz/api/collections/places/records/"
+            + place["id"],
+            headers={"Authorization": admin["token"]},
+            files=tuple(images_to_send),
+        )
 
-        # # Go back to the business overview
-        # browser.execute_script("window.history.go(-1)")
-        # sleep(3)
+        # Go back to the business overview
+        browser.execute_script("window.history.go(-1)")
+        sleep(3)
 
         ### Address
 
-        # try:
-        #     pin_icon = browser.find_element(
-        #         By.CSS_SELECTOR,
-        #         'img[src$="place_gm_blue_24dp.png"]',
-        #     )
+        try:
+            pin_icon = browser.find_element(
+                By.CSS_SELECTOR,
+                'img[src$="place_gm_blue_24dp.png"]',
+            )
 
-        #     container = pin_icon.find_element(
-        #         By.XPATH, "./ancestor::div/following-sibling::div/div"
-        #     )
+            container = pin_icon.find_element(
+                By.XPATH, "./ancestor::div/following-sibling::div/div"
+            )
 
-        #     r = requests.patch(
-        #         "https://db.martinovykavarny.cz/api/collections/places/records/"
-        #         + place["id"],
-        #         headers={
-        #             "Authorization": admin["token"],
-        #             "Content-Type": "application/json",
-        #         },
-        #         data=json.dumps({"address": container.text}),
-        #     )
-        # except:
-        #     pass
+            r = requests.patch(
+                "https://db.martinovykavarny.cz/api/collections/places/records/"
+                + place["id"],
+                headers={
+                    "Authorization": admin["token"],
+                    "Content-Type": "application/json",
+                },
+                data=json.dumps({"address": container.text}),
+            )
+        except:
+            pass
 
         ### Coordinates
 
