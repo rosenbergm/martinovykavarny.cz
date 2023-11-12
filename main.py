@@ -112,21 +112,6 @@ async def root(request: Request):
 async def offline(request: Request):
     places = []
 
-    with open("data/result.csv", newline="") as csvfile:
-        spamreader = csv.reader(csvfile)
-        next(spamreader)
-        for row in spamreader:
-            [lon, lat, name, description, address, city, rating, link] = row
-            places.append(
-                {
-                    "coordinates": [float(lat), float(lon)],
-                    "color": color_by_rating(int(rating)),
-                    "name": name,
-                    "description": description,
-                    "address": address,
-                    "link": link,
-                }
-            )
     return templates.TemplateResponse(
         "offline.jinja.html", {"request": request, "places": places}
     )
