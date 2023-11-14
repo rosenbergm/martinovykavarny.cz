@@ -46,4 +46,4 @@ jobs:
         password: ${{ secrets.SSH_PASSWORD }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose up -d --no-deps --build martinovykavarny.cz
+          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose up -d -f ${{ secrets.COMPOSE_PATH }} --no-deps --build martinovykavarny.cz
