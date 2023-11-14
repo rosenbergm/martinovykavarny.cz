@@ -39,7 +39,7 @@ jobs:
     needs: push_to_registries
     steps:
     - name: SSH into server and deploy
-      uses: appleboy/ssh-action@1.0.0
+      uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
