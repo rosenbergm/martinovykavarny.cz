@@ -1,16 +1,12 @@
-import csv
 import json
 import os
 import secrets
 import requests
-from typing import Annotated
 
 import dotenv
-import httpx
 from fastapi import (
     Depends,
     FastAPI,
-    Form,
     HTTPException,
     Request,
     status,
@@ -118,11 +114,11 @@ async def offline(request: Request):
 
 
 @app.get("/manifest.json", response_class=JSONResponse)
-async def manifest(_request: Request):
+async def manifest(_: Request):
     with open("static/manifest.json") as file:
         return JSONResponse(content=json.load(file))
 
 
 @app.get("/worker.js", response_class=FileResponse)
-async def worker(_request: Request):
+async def worker(_: Request):
     return FileResponse("static/worker.js")
