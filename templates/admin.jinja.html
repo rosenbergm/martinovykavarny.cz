@@ -2,6 +2,54 @@
 
 {% block content %}
 
-<button onclick="fetch('https://martinovykavarny.cz/sweep', {method: 'POST'})">refresh</button>
+<main class="admin">
+    <section>
+        <form action="/add_place" method="post">
+            <fieldset>
+                <legend>Basic information</legend>
+                <table>
+                    <tr>
+                        <td align="right">Name:</td>
+                        <td align="left"><input required type="text" name="name"></td>
+                    </tr>
+                    <tr>
+                        <td align="right">Maps link:</td>
+                        <td align="left"><input required type="url" name="maps_link"></td>
+                    </tr>
+                    <tr>
+                        <td align="right">Rating:</td>
+                        <td align="left">
+                            <select name="rating">
+                                <option value="excellent" selected>Excellent</option>
+                                <option value="recommend">Recommend</option>
+                                <option value="meh">Meh</option>
+                                <option value="norating">No rating</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right" style="vertical-align: top;">Description:</td>
+                        <td align="left"><textarea name="description" cols="3"
+                                style="width: 100%; box-sizing: border-box;"></textarea></td>
+                    </tr>
+                </table>
+                <button type="submit" style="display: block;margin-left: auto;">Send</button>
+            </fieldset>
+
+        </form>
+    </section>
+
+    <hr>
+
+    <fieldset>
+        <legend>Entries</legend>
+        <p>There is/are {{ unpopulated_places }} unpopulated entry(ies).</p>
+        <div>
+            <button onclick="fetch('/sweep', {method: 'POST'})">Try to fill in</button>
+            <button onclick="location.reload()" style="display: block;margin-left: auto;">Refresh page</button>
+        </div>
+    </fieldset>
+</main>
+
 
 {% endblock content %}

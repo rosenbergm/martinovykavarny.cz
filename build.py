@@ -6,6 +6,7 @@ import os
 import re
 import requests
 
+from selenium import webdriver
 from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -15,7 +16,7 @@ from time import sleep
 from urllib.parse import unquote
 
 opts = Options()
-opts.add_argument("--headless")
+# opts.add_argument("--headless")
 
 dotenv.load_dotenv()
 
@@ -45,7 +46,7 @@ with Firefox(options=opts) as browser:
 
     places = (
         requests.get(
-            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0)",
+            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0 || longitude=0 || latitude=0 || address=null)",
             headers={"Accept": "application/json"},
         )
         .json()
@@ -67,7 +68,7 @@ with Firefox(options=opts) as browser:
         if "consent.google.c" in browser.current_url:
             no_consent = browser.find_element(
                 By.CSS_SELECTOR,
-                'button[aria-label="Rifiuta tutto"],button[aria-label="Alle ablehnen"],button[aria-label="Odmítnout vše"]'
+                'button[aria-label="Rifiuta tutto"],button[aria-label="Alle ablehnen"],button[aria-label="Odmítnout vše"]',
                 # By.CSS_SELECTOR,
                 # 'button[aria-label="Rifiuta tutto"]',
             )
@@ -92,15 +93,25 @@ with Firefox(options=opts) as browser:
         except:
             pass
 
+        sleep(3)
+
         ### Images
 
         # Click on the images icon
-        browser.find_element(
-            By.CSS_SELECTOR,
-            'button[aria-label^="Foto von: "],button[aria-label^="Foto di"],button[aria-label^="Fotka"]'
-            # By.CSS_SELECTOR,
-            # 'button[aria-label^="Foto di"]',
-        ).click()
+        def click_on_button():
+            browser.find_element(
+                By.CSS_SELECTOR,
+                'button[aria-label^="Foto von"],button[aria-label^="Foto di"],button[aria-label^="Fotka"]',
+            ).click()
+
+        try:
+            click_on_button()
+        except:
+            # Click on location (100, 100)
+            action = webdriver.ActionChains(browser)
+            action.move_by_offset(0, 300).click().perform()
+
+            click_on_button()
 
         sleep(3)
 

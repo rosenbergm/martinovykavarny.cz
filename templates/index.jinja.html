@@ -3,21 +3,25 @@
 {% block content %}
 
 <main id='map' style='width: 100%; height: 600px;'></main>
-<footer>
+<footer x-data="{}">
   <div>
-    <span class="sign very-good"></span>Velmi doporučuji (Excellent!)
+    <input type="checkbox" checked class="check very-good" @click="$store.filters.toggle('excellent')">
+    Velmi doporučuji (Excellent!)
   </div>
   <div>
-    <span class="sign pretty-good"></span>Doporučuji (Pretty good!)
+    <input type="checkbox" checked class="check pretty-good" @click="$store.filters.toggle('recommend')">
+    Doporučuji (Pretty good!)
   </div>
   <div>
-    <span class="sign good"></span>Not great, not terrible
+    <input type="checkbox" checked class="check good" @click="$store.filters.toggle('meh')">
+    Not great, not terrible
   </div>
   <div>
-    <span class="sign not-been-yet"></span>Zatím nevyzkoušeno (Not been yet)
+    <input type="checkbox" checked class="check not-been-yet" @click="$store.filters.toggle('norating')">
+    Zatím nevyzkoušeno (Not been yet)
   </div>
 
-  <p style="margin: 0; opacity: 0.5; font-size: 0.8rem;">vyrobeno <a href="https://marrrt.in"
+  <p style="margin: 0; opacity: 0.5; font-size: 0.8rem; width: 100%;">vyrobeno <a href="https://marrrt.in"
       target="_blank">martinem</a></p>
 </footer>
 
@@ -27,6 +31,7 @@
 
 <script>
   mapboxgl.accessToken = 'pk.eyJ1Ijoicm9zZW5iZXJnbSIsImEiOiJjamtzYjlnYnkzcjF3M3Fwanc4Nmdmd3IxIn0.j29iER1BDiwOCUCwk4aA9A';
+  const days = ['pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota', 'neděle']
 
   const map = new mapboxgl.Map({
     container: 'map',
@@ -48,35 +53,74 @@
     })
   );
 
-  const data = {{ places | tojson | safe }};
-  const days = ['pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota', 'neděle']
+  const data = {{ places | tojson | safe
+  }};
 
-  for (const point of data) {
-    const hours = Object.entries(point.hours ?? []).map(([day, time]) => `<b>${days[day]}</b><span>${time}</span>`)
+  document.addEventListener('alpine:init', () => {
+    Alpine.store('filters', {
+      init() {
+        const ms = []
+        for (const point of data) {
+          const hours = Object.entries(point.hours ?? []).map(([day, time]) => `<b>${days[day]}</b><span>${time}</span>`)
 
-    const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '300px' }).setHTML(
-      `<h3>${point.name}</h3>
-      <div class="images">
-        ${point.images.map(i => `<img src="https://db.martinovykavarny.cz/api/files/places/${point.id}/${i}" onerror="this.style.display = 'none'"/>`).join('')}
-      </div>
-      <p class="hint">scrolluj, je tam víc obrázků;)</p>
-      <p>${point.description}</p>
-      <p>${point.address}</p>
-      <a target="_blank" href="${point.link}">Otevřít v Mapách Google</a>`
-      + (point.hours
-        ? `<details>
-            <summary>Otevírací doba</summary>
-            <div class="hours">
-              ${hours.join('')}
+          const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '300px' }).setHTML(
+            `<h3>${point.name}</h3>
+            <div class="images">
+              ${point.images.map(i => `<img src="https://db.martinovykavarny.cz/api/files/places/${point.id}/${i}" onerror="this.style.display = 'none'"/>`).join('')}
             </div>
-          </details>`
-        : '')
-    ).addClassName('popup');
+            <p class="hint">scrolluj, je tam víc obrázků;)</p>
+            <p>${point.description}</p>
+            <p>${point.address}</p>
+            <a target="_blank" href="${point.link}">Otevřít v Mapách Google</a>`
+            + (point.hours
+              ? `<details>
+                  <summary>Otevírací doba</summary>
+                  <div class="hours">
+                    ${hours.join('')}
+                  </div>
+                </details>`
+              : '')
+          ).addClassName('popup');
 
-    new mapboxgl.Marker({
-      color: point.color
-    }).setLngLat(point.coordinates).setPopup(popup).addTo(map);
-  }
+          const marker = new mapboxgl.Marker({
+            color: point.color
+          }).setLngLat(point.coordinates).setPopup(popup).addTo(map);
+
+          ms.push([marker, point.rating])
+        }
+
+        this.markers = ms
+      },
+
+      toShow: ['excellent', 'recommend', 'meh', 'norating'],
+
+      toggle(rating) {
+        if (this.toShow.includes(rating)) {
+          const newToShow = this.toShow.filter(r => r !== rating)
+
+          for (const [marker, r] of this.markers) {
+            if (!newToShow.includes(r)) {
+              marker.remove()
+            }
+          }
+
+          this.toShow = newToShow
+        } else {
+          const newToShow = [...this.toShow, rating]
+
+          for (const [marker, r] of this.markers) {
+            if (newToShow.includes(r)) {
+              marker.addTo(map)
+            }
+          }
+
+          this.toShow = newToShow
+        }
+      },
+
+      markers: [],
+    })
+  })
 
 </script>
 

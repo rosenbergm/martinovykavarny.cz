@@ -3,6 +3,8 @@ import os
 import secrets
 import requests
 
+from typing import Annotated
+
 import dotenv
 from fastapi import (
     Depends,
@@ -11,6 +13,7 @@ from fastapi import (
     Request,
     status,
     BackgroundTasks,
+    Form,
 )
 from fastapi.responses import (
     FileResponse,
@@ -30,6 +33,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 admin_auth = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
+
+auth = None
 
 
 def get_admin_auth(credentials: HTTPBasicCredentials = Depends(admin_auth)):
@@ -59,9 +64,60 @@ def color_by_rating(rating: str):
             return "#bebebe"
 
 
+@app.on_event("startup")
+async def on_startup():
+    global auth
+
+    admin = requests.post(
+        "https://db.martinovykavarny.cz/api/admins/auth-with-password",
+        json={"identity": os.getenv("PB_EMAIL"), "password": os.getenv("PB_PASSWORD")},
+    ).json()
+
+    auth = admin
+
+
 @app.get("/admin", response_class=HTMLResponse)
 async def admin(request: Request, _=Depends(get_admin_auth)):
-    return templates.TemplateResponse("admin.jinja.html", {"request": request})
+    places = (
+        requests.get(
+            "https://db.martinovykavarny.cz/api/collections/places/records?perPage=1000&filter=(images:length=0 || longitude=0 || latitude=0 || address=null)",
+            headers={"Accept": "application/json"},
+        )
+        .json()
+        .get("items")
+    )
+
+    return templates.TemplateResponse(
+        "admin.jinja.html", {"request": request, "unpopulated_places": len(places)}
+    )
+
+
+@app.post("/add_place", response_class=HTMLResponse)
+async def add_place(
+    request: Request,
+    name: Annotated[str, Form()],
+    maps_link: Annotated[str, Form()],
+    rating: Annotated[str, Form()],
+    description: Annotated[str, Form()],
+    _=Depends(get_admin_auth),
+):
+    requests.post(
+        "https://db.martinovykavarny.cz/api/collections/places/records",
+        headers={
+            "Authorization": auth["token"],
+            "Content-Type": "application/json",
+        },
+        data=json.dumps(
+            {
+                "name": name,
+                "maps_link": maps_link,
+                "rating": rating,
+                "description": description,
+            }
+        ),
+    )
+
+    return RedirectResponse("/admin", status_code=302)
 
 
 @app.post("/sweep", response_class=HTMLResponse)
@@ -87,6 +143,7 @@ async def root(request: Request):
             {
                 "coordinates": [float(place["latitude"]), float(place["longitude"])],
                 "color": color_by_rating(place["rating"]),
+                "rating": place["rating"],
                 "name": place["name"],
                 "description": place["description"],
                 "address": place["address"],
