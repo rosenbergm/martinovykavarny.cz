@@ -16,7 +16,7 @@ from time import sleep
 from urllib.parse import unquote
 
 opts = Options()
-# opts.add_argument("--headless")
+opts.add_argument("--headless")
 
 dotenv.load_dotenv()
 

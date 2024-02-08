@@ -98,7 +98,7 @@ async def add_place(
     name: Annotated[str, Form()],
     maps_link: Annotated[str, Form()],
     rating: Annotated[str, Form()],
-    description: Annotated[str, Form()],
+    description: Annotated[str | None, Form()],
     _=Depends(get_admin_auth),
 ):
     requests.post(

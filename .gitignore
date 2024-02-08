@@ -165,3 +165,5 @@ data/*
 !**/.gitkeep
 
 .notes.md
+
+deploy.md
