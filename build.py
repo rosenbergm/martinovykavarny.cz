@@ -228,7 +228,9 @@ with Firefox(options=opts) as browser:
                         "opening_hours": dict(
                             enumerate(
                                 map(
-                                    lambda d: d.text,
+                                    lambda d: d.text.replace(
+                                        "Geschlossen", "zavřeno"
+                                    ).replace("Chiuso", "zavřeno"),
                                     right_rotation(opening_hours_rows, today),
                                 )
                             )
