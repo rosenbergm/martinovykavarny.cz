@@ -5,13 +5,14 @@ description = "Martin's coffee rating website"
 authors = ["Martin Rosenberg <nitram.rosenberg@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.10"
-fastapi = {version = "^0.95.0", extras = ["all"]}
+python = "^3.12"
+fastapi = { version = "^0.111.0", extras = ["standard"] }
 jinja2 = "^3.1.2"
-tortoise-orm = {version = "^0.19.3", extras = ["asyncpg"]}
-python-multipart = "^0.0.6"
+tortoise-orm = { version = "^0.21.4", extras = ["asyncpg"] }
+python-multipart = "^0.0.9"
 python-dotenv = "^1.0.0"
 
 
