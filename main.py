@@ -1,7 +1,9 @@
+from contextlib import asynccontextmanager
 import json
 import os
 import secrets
 import requests
+import logging
 
 from typing import Annotated
 
@@ -34,6 +36,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 admin_auth = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
 
+logger = logging.getLogger("uvicorn.error")
+
 auth = None
 
 
@@ -64,8 +68,8 @@ def color_by_rating(rating: str):
             return "#bebebe"
 
 
-@app.on_event("startup")
-async def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global auth
 
     admin = requests.post(
@@ -124,6 +128,7 @@ async def add_place(
 async def sweep(
     request: Request, background_tasks: BackgroundTasks, _=Depends(get_admin_auth)
 ):
+    logger.info("/sweep: started sweeping")
     background_tasks.add_task(lambda: os.system("python build.py"))  # help
 
     return RedirectResponse("/admin", status_code=302)
@@ -131,6 +136,8 @@ async def sweep(
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
+    logger.info("/ : start of request")
+
     places = []
 
     data = requests.get(
@@ -169,12 +176,13 @@ async def offline(request: Request):
     )
 
 
-@app.get("/manifest.json", response_class=JSONResponse)
+@app.get("/manifest.json")
 async def manifest(_: Request):
-    with open("static/manifest.json") as file:
-        return JSONResponse(content=json.load(file))
+    logger.info("/manifest.json : run")
+    return FileResponse("static/manifest.json", media_type="application/json")
 
 
 @app.get("/worker.js", response_class=FileResponse)
 async def worker(_: Request):
+    logger.info("/worker_js : run")
     return FileResponse("static/worker.js")

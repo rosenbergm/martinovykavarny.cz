@@ -64,15 +64,18 @@ with Firefox(options=opts) as browser:
             f'currently proccessing {place["name"]} ({places.index(place) + 1} of {len(places)})'
         )
 
-        # Deal with cookies
-        if "consent.google.c" in browser.current_url:
-            no_consent = browser.find_element(
-                By.CSS_SELECTOR,
-                'button[aria-label="Rifiuta tutto"],button[aria-label="Alle ablehnen"],button[aria-label="Odmítnout vše"]',
-                # By.CSS_SELECTOR,
-                # 'button[aria-label="Rifiuta tutto"]',
-            )
-            no_consent.click()
+        try:
+            # Deal with cookies
+            if "consent.google.c" in browser.current_url:
+                no_consent = browser.find_element(
+                    By.CSS_SELECTOR,
+                    'button[aria-label="Rifiuta tutto"],button[aria-label="Alle ablehnen"],button[aria-label="Odmítnout vše"]',
+                    # By.CSS_SELECTOR,
+                    # 'button[aria-label="Rifiuta tutto"]',
+                )
+                no_consent.click()
+        except:
+            print("deal with cookies error")
 
         ### Name
 
@@ -115,10 +118,13 @@ with Firefox(options=opts) as browser:
 
         sleep(3)
 
-        # Find all the images
-        images = browser.find_elements(
-            By.CSS_SELECTOR, 'div.loaded[style*="googleusercontent.com"]'
-        )
+        try:
+            # Find all the images
+            images = browser.find_elements(
+                By.CSS_SELECTOR, 'div.loaded[style*="googleusercontent.com"]'
+            )
+        except:
+            print("find all images error")
 
         # Extract the image links
         place_images[place["id"]] = [
@@ -139,12 +145,15 @@ with Firefox(options=opts) as browser:
                 )
             )
 
-        r = requests.patch(
-            "https://db.martinovykavarny.cz/api/collections/places/records/"
-            + place["id"],
-            headers={"Authorization": admin["token"]},
-            files=tuple(images_to_send),
-        )
+        try:
+            r = requests.patch(
+                "https://db.martinovykavarny.cz/api/collections/places/records/"
+                + place["id"],
+                headers={"Authorization": admin["token"]},
+                files=tuple(images_to_send),
+            )
+        except:
+            print("api/coll/places/records fail")
 
         # Go back to the business overview
         browser.execute_script("window.history.go(-1)")
@@ -172,6 +181,7 @@ with Firefox(options=opts) as browser:
                 data=json.dumps({"address": container.text}),
             )
         except:
+            print("address error")
             pass
 
         ### Coordinates
@@ -194,6 +204,7 @@ with Firefox(options=opts) as browser:
                 ),
             )
         except:
+            print("coords error")
             pass
 
         ### Opening hours
@@ -239,4 +250,5 @@ with Firefox(options=opts) as browser:
                 ),
             )
         except:
+            print("opening hours fail")
             pass
