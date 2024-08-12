@@ -49,11 +49,29 @@ footer {
   flex-direction: row;
   align-items: center;
 
+  position: relative;
+
   flex-wrap: wrap;
 
   gap: 0.4rem;
 
   padding: 1rem;
+}
+
+#filter-message {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  transform: translateY(-100%);
+  background: #fff;
+  padding: 1rem;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  z-index: 10;
 }
 
 @media screen and (min-width: 800px) {
@@ -68,9 +86,16 @@ footer {
 
     background-color: #fff;
   }
+
+  #filter-message {
+    right: auto;
+    bottom: auto;
+    top: 0;
+    transform: translateX(calc(100% + 1rem)) translateY(0);
+  }
 }
 
-footer>div {
+footer > div {
   display: flex;
   align-items: center;
 
@@ -241,6 +266,10 @@ main.admin {
   padding: 0.8rem;
 }
 
-.admin fieldset>table {
+.admin fieldset > table {
   margin-bottom: 1rem;
+}
+
+[x-cloak] {
+  display: none !important;
 }

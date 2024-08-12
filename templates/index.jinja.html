@@ -5,24 +5,33 @@
 <main id='map' style='width: 100%; height: 600px;'></main>
 <footer x-data="{}">
   <div>
-    <input type="checkbox" checked class="check very-good" @click="$store.filters.toggle('excellent')">
-    Velmi doporučuji (Excellent!)
+    <input type="checkbox" checked class="check very-good" @click="$store.filters.toggle('excellent')" style="cursor: pointer;">
+    velmi doporučuji (excellent!)
   </div>
   <div>
-    <input type="checkbox" checked class="check pretty-good" @click="$store.filters.toggle('recommend')">
-    Doporučuji (Pretty good!)
+    <input type="checkbox" checked class="check pretty-good" @click="$store.filters.toggle('recommend')" style="cursor: pointer;">
+    doporučuji (pretty good!)
   </div>
   <div>
-    <input type="checkbox" checked class="check good" @click="$store.filters.toggle('meh')">
-    Not great, not terrible
+    <input type="checkbox" checked class="check good" @click="$store.filters.toggle('meh')" style="cursor: pointer;">
+    not great, not terrible
   </div>
   <div>
-    <input type="checkbox" checked class="check not-been-yet" @click="$store.filters.toggle('norating')">
-    Zatím nevyzkoušeno (Not been yet)
+    <input type="checkbox" checked class="check not-been-yet" @click="$store.filters.toggle('norating')" style="cursor: pointer;">
+    zatím nevyzkoušeno (not been yet)
   </div>
 
   <p style="margin: 0; opacity: 0.5; font-size: 0.8rem; width: 100%;">vyrobeno <a href="https://marrrt.in"
       target="_blank">martinem</a></p>
+
+  <div x-cloak x-show="!$store.message.closed" id="filter-message" style="">
+    <p style="padding: 0; margin: 0;">
+        zkus kliknout na barvičky u legendy.
+        dá se tak filtrovat.
+    </p>
+
+    <p style="margin: 0; opacity: 0.5; font-size: 0.8rem; width: 100%; cursor: pointer;" @click="$store.message.closeMessage()">zavřít</p>
+  </div>
 </footer>
 
 <div id="installContainer" class="hidden">
@@ -57,6 +66,22 @@
   }};
 
   document.addEventListener('alpine:init', () => {
+    Alpine.store('message', {
+      init() {
+        const wasClosedAlready = localStorage.getItem('filter-msg-closed') === 'true'
+
+        this.closed = wasClosedAlready
+      },
+
+      closed: true,
+
+      closeMessage() {
+        localStorage.setItem('filter-msg-closed', true)
+
+        this.closed = true
+      }
+    })
+
     Alpine.store('filters', {
       init() {
         const ms = []
