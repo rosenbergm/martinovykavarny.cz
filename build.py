@@ -33,6 +33,9 @@ def right_rotation(a, k):
     return a[-rotations:] + a[:-rotations]
 
 
+addr_icon = bytes.fromhex("EE8388").decode()
+hours_icon_code = bytes.fromhex("EEA2B5").decode()
+
 with Firefox(options=opts) as browser:
     browser.maximize_window()
     browser.get("https://maps.google.com")
@@ -162,9 +165,15 @@ with Firefox(options=opts) as browser:
         ### Address
 
         try:
-            pin_icon = browser.find_element(
-                By.CSS_SELECTOR,
-                'img[src$="place_gm_blue_24dp.png"]',
+            pin_icon = next(
+                (
+                    i
+                    for i in browser.find_elements(
+                        By.CSS_SELECTOR, "span.google-symbols"
+                    )
+                    if i.text == addr_icon
+                ),
+                None,
             )
 
             container = pin_icon.find_element(
@@ -211,10 +220,17 @@ with Firefox(options=opts) as browser:
 
         # Click on the opening hours
         try:
-            hours_icon = browser.find_element(
-                By.CSS_SELECTOR,
-                'img[src$="schedule_gm_blue_24dp.png"]',
+            hours_icon = next(
+                (
+                    i
+                    for i in browser.find_elements(
+                        By.CSS_SELECTOR, "span.google-symbols"
+                    )
+                    if i.text == hours_icon_code
+                ),
+                None,
             )
+
             hours_icon.find_element(By.XPATH, "..").click()
 
             sleep(0.5)

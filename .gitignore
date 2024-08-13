@@ -167,3 +167,5 @@ data/*
 .notes.md
 
 deploy.md
+
+test.py
