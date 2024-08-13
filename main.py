@@ -5,6 +5,8 @@ import secrets
 import requests
 import logging
 
+from rich import print
+
 from typing import Annotated
 
 import dotenv
@@ -29,7 +31,24 @@ from fastapi.templating import Jinja2Templates
 
 dotenv.load_dotenv()
 
-app = FastAPI()
+auth = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global auth
+
+    admin = requests.post(
+        "https://db.martinovykavarny.cz/api/admins/auth-with-password",
+        json={"identity": os.getenv("PB_EMAIL"), "password": os.getenv("PB_PASSWORD")},
+    ).json()
+
+    auth = admin
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -37,8 +56,6 @@ admin_auth = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
 
 logger = logging.getLogger("uvicorn.error")
-
-auth = None
 
 
 def get_admin_auth(credentials: HTTPBasicCredentials = Depends(admin_auth)):
@@ -66,18 +83,6 @@ def color_by_rating(rating: str):
             return "#afb42b"
         case _:
             return "#bebebe"
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global auth
-
-    admin = requests.post(
-        "https://db.martinovykavarny.cz/api/admins/auth-with-password",
-        json={"identity": os.getenv("PB_EMAIL"), "password": os.getenv("PB_PASSWORD")},
-    ).json()
-
-    auth = admin
 
 
 @app.get("/admin", response_class=HTMLResponse)

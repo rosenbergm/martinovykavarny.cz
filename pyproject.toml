@@ -9,7 +9,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = { version = "^0.111.0", extras = ["standard"] }
+fastapi = { version = "0.112.0", extras = ["standard"] }
 jinja2 = "^3.1.2"
 tortoise-orm = { version = "^0.21.4", extras = ["asyncpg"] }
 python-multipart = "^0.0.9"
@@ -20,6 +20,7 @@ python-dotenv = "^1.0.0"
 black = "^23.3.0"
 selenium = "^4.8.3"
 requests = "^2.28.2"
+rich = "^13.7.1"
 
 [build-system]
 requires = ["poetry-core"]
